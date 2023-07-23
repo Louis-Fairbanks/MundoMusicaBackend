@@ -26,7 +26,7 @@ app.use(cors({
 //     res.send(`Hello ${req.user.username}!`);
 // })
 
-app.post('/login', async (req, res) => {          //onboarding for users
+app.post('/login', async (req, res) => {          //login for users
     const requestedUsername = req.body.username;        //unique username that was inputted
     let isUserAllowed = false;
     const requestedUser = await user.findOne({"accountDetails.username" : requestedUsername});
@@ -105,18 +105,28 @@ const user = accountsDb.model("user", accountSchema);
         update.lName = req.body.lName;
       }
       if (req.body.age){
-        update.age = req.body.age;
+        let stringifiedAge = parseInt(req.body.age);
+        update.age = stringifiedAge;
       }
-      if (req.body.located){
-        update.located = req.body.located;
+      if (req.body.location){
+        update.located = req.body.location;
       }
       if(req.body.about){
         update.about = req.body.about;
       }
-      let userToUpdate = await user.findOneAndUpdate(filter, update);
+      let userToUpdate = await user.findOneAndUpdate(filter, update, {new : true});
       if (userToUpdate){
-        res.status(200).send({message : 'User updated!'});
-      }else {res.status(400).send({message : 'User update unsuccessful'})};
+      const accessToken = jsonWebToken.sign({ userToUpdate}, process.env.ACCESS_TOKEN_SECRET);
+      res.send({accessToken : accessToken});
+      }else   {res.status(200).send({message : 'User updated!'});}
+ })
+
+ app.get('/users/:username', authenticateToken, async(req, res) => {
+  let filter = {"accountDetails.username" : req.params.username};
+  let loggedInUser = await user.findOne(filter);
+  if (loggedInUser){
+    res.status(200).send(loggedInUser)
+  } else res.status(400).send({message: 'User not found'})
  })
 
 app.listen(9000, () => console.log("Server started on port 9000"));
