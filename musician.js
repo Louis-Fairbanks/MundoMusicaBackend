@@ -1,9 +1,14 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const musicianSchema = new mongoose.Schema({
-    instruments: [mongoose.Schema.Types.Mixed],
-    reviews:[mongoose.Schema.Types.Mixed],
-    projects: [mongoose.Schema.Types.Mixed],
+    username : String,
+    instruments : [String],
+    participatingProjects : [String],
+    media : [{
+        associatedProject : String,
+        file : [mongoose.Schema.Types.Mixed]
+    }],
+    pricing : String
 })
 
 module.exports = musicianSchema;
